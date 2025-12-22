@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package payment;
+
+option go_package="github.com/niklvrr/OnlineShop/proto-contracts/gen/go/payment";
+
+service PaymentService {
+  rpc CreateAccount(CreateAccountRequest) returns (CreateAccountResponse);
+
+  rpc ReplenishAccount(ReplenishAccountRequest) returns (ReplenishAccountResponse);
+
+  rpc GetBalance(GetBalanceRequest) returns (GetBalanceResponse);
+
+  rpc DebitToAccount(DebitToAccountRequest) returns (DebitToAccountResponse);
+
+  rpc GetAccountByUserId(GetAccountByUserIdRequest) returns (GetAccountByUserIdResponse);
+}
+
+// ==== CREATE ACCOUNT ====
+message CreateAccountRequest {
+  string user_id = 1;
+}
+
+message CreateAccountResponse {
+  string account_id = 1;
+}
+
+// ==== REPLENISH ACCOUNT ====
+message ReplenishAccountRequest {
+  string account_id = 1;
+  float replenish_amount = 2;
+}
+
+message ReplenishAccountResponse {
+  string status = 1;
+}
+
+// ==== GET BALANCE ====
+message GetBalanceRequest {
+  string account_id = 1;
+}
+
+message GetBalanceResponse {
+  float balance = 1;
+}
+
+// ==== DEBIT TO ACCOUNT ====
+message DebitToAccountRequest {
+  string account_id = 1;
+  float debit_amount = 2;
+}
+
+message DebitToAccountResponse {
+  string status = 1;
+}
+
+// ==== GET ACCOUNT BY USER ID ====
+message GetAccountByUserIdRequest {
+  string user_id = 1;
+}
+
+message GetAccountByUserIdResponse {
+  string account_id = 1;
+}
