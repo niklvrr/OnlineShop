@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-func LoadLogger(envLevel string) *slog.Logger {
+func NewLogger(envLevel string) *slog.Logger {
 	logHandler := slog.NewTextHandler(
 		os.Stdout,
 		&slog.HandlerOptions{
@@ -17,15 +17,15 @@ func LoadLogger(envLevel string) *slog.Logger {
 }
 
 const (
-	EnvProd = "prod"
-	EnvDev  = "dev"
+	envProd = "prod"
+	envDev  = "dev"
 )
 
 func getLevel(level string) slog.Level {
 	switch level {
-	case EnvProd:
+	case envProd:
 		return slog.LevelInfo
-	case EnvDev:
+	case envDev:
 		return slog.LevelDebug
 	}
 	return slog.LevelDebug
