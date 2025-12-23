@@ -15,8 +15,7 @@ service OrderService {
 message CreateOrderRequest {
   string user_id = 1;
   float amount = 2;
-  string description = 3;
-  string status = 4;
+  string status = 3;
 }
 
 message CreateOrderResponse {
@@ -37,8 +36,7 @@ message Order {
   string id = 1;
   string user_id = 2;
   float amount = 3;
-  string description = 4;
-  string status = 5;
+  string status = 4;
 }
 
 // ==== GET ORDER STATUS ====
