@@ -2,9 +2,7 @@ package handler
 
 import (
 	"context"
-	"encoding/json"
 	"github.com/google/uuid"
-	"github.com/niklvrr/OnlineShop/payment-service/internal/domain"
 	"github.com/niklvrr/OnlineShop/payment-service/internal/infrastructure/pgdb"
 	"github.com/niklvrr/OnlineShop/payment-service/internal/usecase"
 	paymentpb "github.com/niklvrr/OnlineShop/proto-contracts/gen/go/payment"
@@ -47,7 +45,7 @@ func (h *PaymentHandler) ReplenishAccount(ctx context.Context, req *paymentpb.Re
 		return nil, err
 	}
 
-	err = h.paymentUC.ReplenishAccount(ctx, accountId, req.ReplenishAmount)
+	err = h.paymentUC.ReplenishAccount(ctx, accountId, float64(req.ReplenishAmount))
 	if err != nil {
 		h.logger.Error("failed to replenish account", "error", err)
 		return nil, err
@@ -71,7 +69,7 @@ func (h *PaymentHandler) GetBalance(ctx context.Context, req *paymentpb.GetBalan
 	}
 
 	return &paymentpb.GetBalanceResponse{
-		Balance: balance,
+		Balance: float32(balance),
 	}, nil
 }
 
@@ -81,7 +79,7 @@ func (h *PaymentHandler) DebitToAccount(ctx context.Context, req *paymentpb.Debi
 		return nil, err
 	}
 
-	err = h.paymentUC.DebitAccount(ctx, accountId, req.DebitAmount)
+	err = h.paymentUC.DebitAccount(ctx, accountId, float64(req.DebitAmount))
 	if err != nil {
 		h.logger.Error("failed to debit account", "error", err)
 		return nil, err
@@ -125,7 +123,7 @@ func (h *PaymentHandler) InitiatePayment(ctx context.Context, req *paymentpb.Ini
 		idempotencyKey = uuid.New().String()
 	}
 
-	payment, err := h.paymentUC.InitiatePayment(ctx, orderId, userId, req.Amount, req.PaymentMethod, idempotencyKey)
+	payment, err := h.paymentUC.InitiatePayment(ctx, orderId, userId, float64(req.Amount), req.PaymentMethod, idempotencyKey)
 	if err != nil {
 		if err == pgdb.ErrDuplicate {
 			existingPayment, err := h.paymentUC.GetPaymentByOrderIdAndIdempotencyKey(ctx, orderId, idempotencyKey)
@@ -164,7 +162,7 @@ func (h *PaymentHandler) GetPaymentStatus(ctx context.Context, req *paymentpb.Ge
 		PaymentId: payment.Id.String(),
 		OrderId:   payment.OrderId.String(),
 		Status:    string(payment.Status),
-		Amount:    payment.Amount,
+		Amount:    float32(payment.Amount),
 	}, nil
 }
 
