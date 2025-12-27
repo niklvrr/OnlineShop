@@ -14,6 +14,10 @@ service PaymentService {
   rpc DebitToAccount(DebitToAccountRequest) returns (DebitToAccountResponse);
 
   rpc GetAccountByUserId(GetAccountByUserIdRequest) returns (GetAccountByUserIdResponse);
+
+  rpc InitiatePayment(InitiatePaymentRequest) returns (InitiatePaymentResponse);
+
+  rpc GetPaymentStatus(GetPaymentStatusRequest) returns (GetPaymentStatusResponse);
 }
 
 // ==== CREATE ACCOUNT ====
@@ -61,4 +65,30 @@ message GetAccountByUserIdRequest {
 
 message GetAccountByUserIdResponse {
   string account_id = 1;
+}
+
+// ==== INITIATE PAYMENT ====
+message InitiatePaymentRequest {
+  string order_id = 1;
+  string user_id = 2;
+  float amount = 3;
+  string payment_method = 4;
+  string idempotency_key = 5;
+}
+
+message InitiatePaymentResponse {
+  string payment_id = 1;
+  string status = 2;
+}
+
+// ==== GET PAYMENT STATUS ====
+message GetPaymentStatusRequest {
+  string payment_id = 1;
+}
+
+message GetPaymentStatusResponse {
+  string payment_id = 1;
+  string order_id = 2;
+  string status = 3;
+  float amount = 4;
 }

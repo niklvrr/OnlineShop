@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/joho/godotenv"
 	"os"
+	"strings"
 )
 
 var (
@@ -34,6 +35,7 @@ type KafkaConfig struct {
 	ZookeeperConnect    string
 	Listeners           []string
 	AdvertisedListeners []string
+	Brokers             []string
 }
 
 type Config struct {
@@ -64,6 +66,7 @@ func LoadConfig() (*Config, error) {
 			ZookeeperConnect:    getEnv("KAFKA_ZOOKEEPER_CONNECT", "localhost:2181"),
 			Listeners:           []string{getEnv("KAFKA_LISTENERS", "localhost:9092")},
 			AdvertisedListeners: []string{getEnv("KAFKA_ADVERTISED_LISTENERS", "localhost:9092")},
+			Brokers:             strings.Split(getEnv("KAFKA_BROKERS", "localhost:9092"), ","),
 		},
 	}
 

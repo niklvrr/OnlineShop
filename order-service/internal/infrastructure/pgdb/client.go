@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"log/slog"
 	"time"
 )
@@ -27,7 +28,7 @@ func NewPgClient(dbUrl string) (*sql.DB, error) {
 		return nil, errDbUrlEmpty
 	}
 
-	db, err := sql.Open("postgres", dbUrl)
+	db, err := sql.Open("pgx", dbUrl)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", errFailedToConnectDB, err)
 	}
