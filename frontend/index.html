@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Shop</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            margin-bottom: 30px;
+            color: #333;
+        }
+        .section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .section h2 {
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .item-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .item-row input {
+            flex: 1;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Online Shop</h1>
+
+        <div class="section">
+            <h2>Создать заказ</h2>
+            <form id="createOrderForm">
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="userId" value="user-1" required>
+                </div>
+                <div class="form-group">
+                    <label>Товары:</label>
+                    <div id="itemsContainer">
+                        <div class="item-row">
+                            <input type="text" placeholder="SKU" class="item-sku" value="sku-1">
+                            <input type="number" placeholder="Количество" class="item-qty" value="1" min="1">
+                            <input type="number" placeholder="Цена" class="item-price" value="100" min="0" step="0.01">
+                        </div>
+                    </div>
+                    <button type="button" onclick="addItemRow()">Добавить товар</button>
+                </div>
+                <button type="submit">Создать заказ</button>
+            </form>
+            <div id="createOrderResult" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>Статус заказа</h2>
+            <form id="getOrderStatusForm">
+                <div class="form-group">
+                    <label>Order ID:</label>
+                    <input type="text" id="orderId" required>
+                </div>
+                <button type="submit">Получить статус</button>
+            </form>
+            <div id="orderStatusResult" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>Инициировать платеж</h2>
+            <form id="initiatePaymentForm">
+                <div class="form-group">
+                    <label>Order ID:</label>
+                    <input type="text" id="paymentOrderId" required>
+                </div>
+                <div class="form-group">
+                    <label>User ID:</label>
+                    <input type="text" id="paymentUserId" value="user-1" required>
+                </div>
+                <div class="form-group">
+                    <label>Сумма:</label>
+                    <input type="number" id="paymentAmount" required min="0" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Способ оплаты:</label>
+                    <select id="paymentMethod" required>
+                        <option value="card">Карта</option>
+                        <option value="wallet">Кошелек</option>
+                    </select>
+                </div>
+                <button type="submit">Инициировать платеж</button>
+            </form>
+            <div id="paymentResult" class="result"></div>
+        </div>
+
+        <div class="section">
+            <h2>Статус платежа</h2>
+            <form id="getPaymentStatusForm">
+                <div class="form-group">
+                    <label>Payment ID:</label>
+                    <input type="text" id="paymentId" required>
+                </div>
+                <button type="submit">Получить статус</button>
+            </form>
+            <div id="paymentStatusResult" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080/api/v1';
+
+        function addItemRow() {
+            const container = document.getElementById('itemsContainer');
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <input type="text" placeholder="SKU" class="item-sku">
+                <input type="number" placeholder="Количество" class="item-qty" min="1">
+                <input type="number" placeholder="Цена" class="item-price" min="0" step="0.01">
+                <button type="button" onclick="this.parentElement.remove()">Удалить</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function getItems() {
+            const items = [];
+            document.querySelectorAll('.item-row').forEach(row => {
+                const sku = row.querySelector('.item-sku').value;
+                const qty = parseInt(row.querySelector('.item-qty').value);
+                const price = parseFloat(row.querySelector('.item-price').value);
+                if (sku && qty && price) {
+                    items.push({ sku, qty, price });
+                }
+            });
+            return items;
+        }
+
+        function showResult(elementId, message, isSuccess) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = 'result ' + (isSuccess ? 'success' : 'error');
+            element.style.display = 'block';
+        }
+
+        document.getElementById('createOrderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const userId = document.getElementById('userId').value;
+            const items = getItems();
+
+            try {
+                const response = await fetch(`${API_BASE}/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, items, metadata: {} })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('createOrderResult', `Заказ создан: ${data.order_id}`, true);
+                } else {
+                    showResult('createOrderResult', `Ошибка: ${data.error || 'Неизвестная ошибка'}`, false);
+                }
+            } catch (error) {
+                showResult('createOrderResult', `Ошибка: ${error.message}`, false);
+            }
+        });
+
+        document.getElementById('getOrderStatusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const orderId = document.getElementById('orderId').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/orders/${orderId}`);
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('orderStatusResult', 
+                        `Статус: ${data.status}, Сумма: ${data.amount}, User ID: ${data.user_id}`, true);
+                } else {
+                    showResult('orderStatusResult', `Ошибка: ${data.error || 'Неизвестная ошибка'}`, false);
+                }
+            } catch (error) {
+                showResult('orderStatusResult', `Ошибка: ${error.message}`, false);
+            }
+        });
+
+        document.getElementById('initiatePaymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const orderId = document.getElementById('paymentOrderId').value;
+            const userId = document.getElementById('paymentUserId').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const paymentMethod = document.getElementById('paymentMethod').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/payments`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ order_id: orderId, user_id: userId, amount, payment_method: paymentMethod })
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('paymentResult', `Платеж инициирован: ${data.payment_id}, Статус: ${data.status}`, true);
+                } else {
+                    showResult('paymentResult', `Ошибка: ${data.error || 'Неизвестная ошибка'}`, false);
+                }
+            } catch (error) {
+                showResult('paymentResult', `Ошибка: ${error.message}`, false);
+            }
+        });
+
+        document.getElementById('getPaymentStatusForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const paymentId = document.getElementById('paymentId').value;
+
+            try {
+                const response = await fetch(`${API_BASE}/payments/${paymentId}`);
+                const data = await response.json();
+                if (response.ok) {
+                    showResult('paymentStatusResult', 
+                        `Статус: ${data.status}, Order ID: ${data.order_id}, Сумма: ${data.amount}`, true);
+                } else {
+                    showResult('paymentStatusResult', `Ошибка: ${data.error || 'Неизвестная ошибка'}`, false);
+                }
+            } catch (error) {
+                showResult('paymentStatusResult', `Ошибка: ${error.message}`, false);
+            }
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS outbox;
+DROP TYPE IF EXISTS message_type;
+

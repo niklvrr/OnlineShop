@@ -1,0 +1,189 @@
+openapi: 3.0.0
+info:
+  title: Online Shop API
+  version: 1.0.0
+  description: REST API для работы с заказами и платежами
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local development server
+
+paths:
+  /orders:
+    post:
+      summary: Создать заказ
+      tags:
+        - Orders
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+                - items
+              properties:
+                user_id:
+                  type: string
+                  example: "user-1"
+                items:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - sku
+                      - qty
+                      - price
+                    properties:
+                      sku:
+                        type: string
+                        example: "sku-1"
+                      qty:
+                        type: integer
+                        example: 1
+                      price:
+                        type: number
+                        format: float
+                        example: 100.0
+                metadata:
+                  type: object
+                  additionalProperties:
+                    type: string
+      responses:
+        '200':
+          description: Заказ создан
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                    example: "550e8400-e29b-41d4-a716-446655440000"
+        '400':
+          description: Неверный запрос
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /orders/{order_id}:
+    get:
+      summary: Получить статус заказа
+      tags:
+        - Orders
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Статус заказа
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  order_id:
+                    type: string
+                  status:
+                    type: string
+                    example: "NEW"
+                  amount:
+                    type: number
+                    format: float
+                  user_id:
+                    type: string
+        '404':
+          description: Заказ не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /payments:
+    post:
+      summary: Инициировать платеж
+      tags:
+        - Payments
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - order_id
+                - user_id
+                - amount
+                - payment_method
+              properties:
+                order_id:
+                  type: string
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                user_id:
+                  type: string
+                  example: "user-1"
+                amount:
+                  type: number
+                  format: float
+                  example: 100.0
+                payment_method:
+                  type: string
+                  example: "card"
+                idempotency_key:
+                  type: string
+                  example: "unique-key-123"
+      responses:
+        '200':
+          description: Платеж инициирован
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_id:
+                    type: string
+                  status:
+                    type: string
+                    example: "COMPLETED"
+        '400':
+          description: Неверный запрос
+        '500':
+          description: Внутренняя ошибка сервера
+
+  /payments/{payment_id}:
+    get:
+      summary: Получить статус платежа
+      tags:
+        - Payments
+      parameters:
+        - name: payment_id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: "550e8400-e29b-41d4-a716-446655440000"
+      responses:
+        '200':
+          description: Статус платежа
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  payment_id:
+                    type: string
+                  order_id:
+                    type: string
+                  status:
+                    type: string
+                    example: "COMPLETED"
+                  amount:
+                    type: number
+                    format: float
+        '404':
+          description: Платеж не найден
+        '500':
+          description: Внутренняя ошибка сервера
+
